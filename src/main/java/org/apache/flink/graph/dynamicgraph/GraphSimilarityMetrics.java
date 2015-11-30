@@ -90,10 +90,10 @@ public class GraphSimilarityMetrics {
 		DataSet<Tuple2<Tuple2<Long, Long>, Long>> jdd1 = jointDegreeDistribution(graph1);
 		DataSet<Tuple2<Tuple2<Long, Long>, Long>> jdd2 = jointDegreeDistribution(graph2);
 		/** LeftOuterJoin is available from Flink version 0.10 **/
-		//DataSet<Tuple2<Tuple2<Tuple2<Long, Long>, Long>, Tuple2<Tuple2<Long, Long>, Long>>>
-		//		jdd = jdd1.leftOuterJoin(jdd2).where("f0").equalTo("f0"); 		
-		DataSet<Tuple2<Tuple2<Tuple2<Long, Long>, Long>, Tuple2<Tuple2<Long, Long>, Long>>> jdd =
-				jdd1.join(jdd2).where("f0").equalTo("f0");
+		DataSet<Tuple2<Tuple2<Tuple2<Long, Long>, Long>, Tuple2<Tuple2<Long, Long>, Long>>>
+				jdd = jdd1.leftOuterJoin(jdd2).where("f0").equalTo("f0"); 		
+		//DataSet<Tuple2<Tuple2<Tuple2<Long, Long>, Long>, Tuple2<Tuple2<Long, Long>, Long>>> jdd =
+		//		jdd1.join(jdd2).where("f0").equalTo("f0");
 		//jdd.print();
 		DataSet<Long> difference = jdd.map(new EuclideanMap()).reduce(new IntSummer());		
 		return  Math.sqrt(difference.collect().get(0));
