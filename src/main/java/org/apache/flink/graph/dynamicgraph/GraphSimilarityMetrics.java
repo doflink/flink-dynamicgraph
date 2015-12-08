@@ -1,5 +1,7 @@
 package org.apache.flink.graph.dynamicgraph;
 
+import org.apache.flink.graph.dynamicgraph.PointAssigner;
+
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.java.DataSet;
@@ -10,6 +12,8 @@ import org.apache.flink.types.NullValue;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.example.utils.ExampleUtils;
 import org.apache.flink.graph.Graph;
+
+
 
 
 public class GraphSimilarityMetrics {
@@ -86,12 +90,16 @@ public class GraphSimilarityMetrics {
 		
 	}
 	
+
+
+	
 	public static double differenceGraphs(Graph<Long, NullValue, NullValue> graph1, Graph<Long, NullValue, NullValue> graph2) throws Exception{
 		DataSet<Tuple2<Tuple2<Long, Long>, Long>> jdd1 = jointDegreeDistribution(graph1);
 		DataSet<Tuple2<Tuple2<Long, Long>, Long>> jdd2 = jointDegreeDistribution(graph2);
 		/** LeftOuterJoin is available from Flink version 0.10 **/
 		DataSet<Tuple2<Tuple2<Tuple2<Long, Long>, Long>, Tuple2<Tuple2<Long, Long>, Long>>>
-				jdd = jdd1.leftOuterJoin(jdd2).where("f0").equalTo("f0"); 		
+				jdd = jdd1.fullOuterJoin(jdd2).where("f0").equalTo("f0").with(new PointAssigner()); 	
+				
 		//DataSet<Tuple2<Tuple2<Tuple2<Long, Long>, Long>, Tuple2<Tuple2<Long, Long>, Long>>> jdd =
 		//		jdd1.join(jdd2).where("f0").equalTo("f0");
 		//jdd.print();
@@ -122,6 +130,16 @@ public class GraphSimilarityMetrics {
 				}
 				else {
 					result = 2*in.f0.f1*in.f0.f1;
+				}
+				
+			}
+			else if(in.f0 == null){
+				
+				if (in.f1.f0.f0 == in.f1.f0.f1){
+					result = in.f1.f1 * in.f1.f1;
+				}
+				else {
+					result = 2*in.f1.f1*in.f1.f1;
 				}
 				
 			}
@@ -190,4 +208,8 @@ public class GraphSimilarityMetrics {
 			return ExampleUtils.getRandomEdges(env, NUM_VERTICES);
 		}
 	}
+	
+	
 }
+
+
